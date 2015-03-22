@@ -11,9 +11,11 @@ import (
 )
 
 type Config struct {
-	Endpoint string
-	Interval string
-	Target   string
+	Endpoint  string
+	Interval  string
+	Target    string
+	Threshold float64
+	Rule      string
 }
 
 type Data struct {
@@ -24,11 +26,71 @@ type Data struct {
 func main() {
 	config := readConfig()
 	data := getData(config)
-	fmt.Printf("got %d data targets\n", len(data))
-	fmt.Println("they are: ")
-	for i := range data {
-		fmt.Printf("target: %s\n", data[i].Target)
+	monitorData(data, config.Rule, config.Threshold)
+}
+
+func monitorData(d []Data, rule string, thres float64) {
+	for i := range d {
+		data := d[i]
+
+		switch rule {
+		case "==":
+			for j := range data.DataPoints {
+				if data.DataPoints[j][0] == thres {
+					fmt.Printf("target : %s is ", data.Target)
+					fmt.Printf("equal to the threshold of %f\n", thres)
+					break
+				}
+			}
+		case "!=":
+			for j := range data.DataPoints {
+				if data.DataPoints[j][0] != thres {
+					fmt.Printf("target : %s is ", data.Target)
+					fmt.Printf("not equal to the threshold of %f\n", thres)
+					break
+				}
+			}
+		case "<":
+			for j := range data.DataPoints {
+				if data.DataPoints[j][0] < thres {
+					fmt.Printf("target : %s is ", data.Target)
+					fmt.Printf("less than the threshold of %f\n", thres)
+					break
+				}
+			}
+		case "<=":
+			for j := range data.DataPoints {
+				if data.DataPoints[j][0] <= thres {
+					fmt.Printf("target : %s is ", data.Target)
+					fmt.Printf("less than or equal to the threshold of %f\n", thres)
+					break
+				}
+			}
+		case ">":
+			for j := range data.DataPoints {
+				if data.DataPoints[j][0] > thres {
+					fmt.Printf("target : %s is ", data.Target)
+					fmt.Printf("greater than the threshold of %f\n", thres)
+					break
+				}
+			}
+		case ">=":
+			for j := range data.DataPoints {
+				if data.DataPoints[j][0] >= thres {
+					fmt.Printf("target : %s is ", data.Target)
+					fmt.Printf("greater than or equal to the threshold of %f\n", thres)
+					break
+				}
+			}
+		}
 	}
+
+	// 	==    equal
+	// !=    not equal
+	// <     less
+	// <=    less or equal
+	// >     greater
+	// >=    greater or equal
 }
 
 func readConfig() Config {
